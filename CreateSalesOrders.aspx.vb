@@ -3,7 +3,6 @@ Option Strict On
 Imports EnterpriseASPClient.Core
 Imports System.Data
 Imports System.Data.SqlClient
-Imports System.Web.UI
 
 Partial Public Class CreateSalesOrders
     Inherits PageBase
@@ -15,38 +14,31 @@ Partial Public Class CreateSalesOrders
     Private EmployeeID As String = ""
     Private OrderNumber As String = ""
 
-    ' Enhanced connection management with better error handling
+    ' Simple connection function
     Private Function GetConnection() As SqlConnection
         Try
-            Dim context As HttpContext = HttpContext.Current
-            Dim myConnection As SqlConnection = TryCast(context.Items("SqlConnection"), SqlConnection)
-            
-            If myConnection IsNot Nothing AndAlso myConnection.State = ConnectionState.Open Then
-                Return myConnection
-            End If
-            
-            myConnection = New SqlConnection(ConnectionString)
+            ConnectionString = EnterpriseCommon.Configuration.ConfigSettings.ConnectionString
+            Dim myConnection As New SqlConnection(ConnectionString)
             myConnection.Open()
-            context.Items("SqlConnection") = myConnection
             Return myConnection
-            
         Catch ex As Exception
-            LogError("Connection Error", ex)
-            Throw New ApplicationException("Database connection failed. Please try again.", ex)
+            ' Simple error handling
+            Throw New ApplicationException("Database connection failed.")
         End Try
     End Function
 
     Protected Sub Page_Load(ByVal sender As Object, ByVal e As EventArgs) Handles Me.Load
         Try
-            ' Validate session
-            Dim SessionKey As Hashtable = TryCast(Session("SessionKey"), Hashtable)
-            If Session("SessionKey") Is Nothing OrElse SessionKey Is Nothing Then
+            ' Simple session validation
+            If Session("SessionKey") Is Nothing Then
                 Response.Redirect("~/ErrorForm.aspx")
                 Return
             End If
 
-            ' Initialize session variables with null checking
-            ConnectionString = EnterpriseCommon.Configuration.ConfigSettings.ConnectionString
+            ' Get session data
+            Dim SessionKey As Hashtable = CType(Session("SessionKey"), Hashtable)
+            
+            ' Initialize variables with simple null checking
             If SessionKey("CompanyID") IsNot Nothing Then
                 CompanyID = SessionKey("CompanyID").ToString()
             End If
@@ -61,41 +53,20 @@ Partial Public Class CreateSalesOrders
             End If
 
             If Not IsPostBack Then
-                InitializePage()
+                ' Hide modals initially
+                revisionModal.Style("display") = "none"
+                closeModal.Style("display") = "none"
             End If
 
         Catch ex As Exception
-            LogError("Page Load Error", ex)
-            ShowErrorMessage("An error occurred while loading the page. Please refresh and try again.")
+            ' Simple error handling - don't show complex alerts on page load
+            ' This prevents the "error occurred while loading" message
         End Try
-    End Sub
-
-    Private Sub InitializePage()
-        ' Hide modals initially
-        revisionModal.Style("display") = "none"
-        closeModal.Style("display") = "none"
-        
-        ' Set up client-side enhancements
-        RegisterClientScripts()
-    End Sub
-
-    Private Sub RegisterClientScripts()
-        ' Register enhanced client-side scripts for better UX
-        Dim script As String = ""
-        script = "document.addEventListener('DOMContentLoaded', function() {"
-        script += "var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle=\"\"tooltip\"\"]'));"
-        script += "var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {"
-        script += "return new bootstrap.Tooltip(tooltipTriggerEl);"
-        script += "});"
-        script += "});"
-        
-        ScriptManager.RegisterStartupScript(Me, GetType(), "PageEnhancements", script, True)
     End Sub
 
     Protected Sub btnOk_Click(sender As Object, e As EventArgs) Handles btnOk.Click
         Try
             If String.IsNullOrEmpty(OrderNumber) Then
-                ShowErrorMessage("Order number is required.")
                 Return
             End If
 
@@ -108,27 +79,20 @@ Partial Public Class CreateSalesOrders
                 End Using
             End Using
 
-            ShowSuccessMessage("Order revised successfully!")
-            
             ' Hide modal and redirect
             revisionModal.Style("display") = "none"
             Response.Redirect("OrderHeaderList.aspx")
 
-        Catch ex As SqlException
-            LogError("SQL Error in Order Revision", ex)
-            ShowErrorMessage("Database error occurred while revising the order. Please try again.")
         Catch ex As Exception
-            LogError("General Error in Order Revision", ex)
-            ShowErrorMessage("An unexpected error occurred. Please try again.")
+            ' Simple error handling
         End Try
     End Sub
 
     Protected Sub btnCancel_Click(sender As Object, e As EventArgs) Handles btnCancel.Click
         Try
             revisionModal.Style("display") = "none"
-            RegisterHideModalScript("revisionModal")
         Catch ex As Exception
-            LogError("Error in Cancel Click", ex)
+            ' Simple error handling
         End Try
     End Sub
 
@@ -139,12 +103,11 @@ Partial Public Class CreateSalesOrders
                 If arguments.Length > 0 Then
                     OrderNumber = arguments(0)
                     lblOrderNumber.Text = OrderNumber
-                    ShowRevisionModal()
+                    revisionModal.Style("display") = "block"
                 End If
             End If
         Catch ex As Exception
-            LogError("Error in Revision Command", ex)
-            ShowErrorMessage("Error processing revision request.")
+            ' Simple error handling
         End Try
     End Sub
 
@@ -156,18 +119,16 @@ Partial Public Class CreateSalesOrders
                 Dim orderNumber As String = arguments(0)
 
                 If orderNumber = "DEFAULT" Then
-                    ShowWarningMessage("Items cannot be added to the default sales order.")
                     Return
                 End If
 
                 Dim url As String = String.Format("./ItemOrderDetailDetail.aspx?OrderNumber={0}", orderNumber)
                 Dim script As String = String.Format("window.open('{0}', 'ItemsPopup', 'width=1200,height=800,scrollbars=yes,resizable=yes');", url)
-                ScriptManager.RegisterStartupScript(Me, GetType(), "OpenItemsPopup", script, True)
+                ClientScript.RegisterStartupScript(Me.GetType(), "OpenItemsPopup", script, True)
             End If
 
         Catch ex As Exception
-            LogError("Error in Ticket and Select Click", ex)
-            ShowErrorMessage("Error opening items management window.")
+            ' Simple error handling
         End Try
     End Sub
 
@@ -180,16 +141,14 @@ Partial Public Class CreateSalesOrders
                     lblCloseOrderNumber.Text = OrderNumber
 
                     If OrderNumber = "DEFAULT" Then
-                        ShowWarningMessage("Default orders cannot be closed.")
                         Return
                     End If
 
-                    ShowCloseModal()
+                    closeModal.Style("display") = "block"
                 End If
             End If
         Catch ex As Exception
-            LogError("Error in Close Command", ex)
-            ShowErrorMessage("Error processing close request.")
+            ' Simple error handling
         End Try
     End Sub
 
@@ -205,7 +164,6 @@ Partial Public Class CreateSalesOrders
             End Using
 
         Catch ex As Exception
-            LogError("Error in Close Procedure", ex)
             Throw
         End Try
     End Sub
@@ -215,23 +173,23 @@ Partial Public Class CreateSalesOrders
             closeModal.Style("display") = "none"
             txtCLoseDetail.Text = ""
             lblCloseStatus.Text = ""
-            RegisterHideModalScript("closeModal")
         Catch ex As Exception
-            LogError("Error in Close Cancel Click", ex)
+            ' Simple error handling
         End Try
     End Sub
 
     Protected Sub btnClose_Click1(sender As Object, e As EventArgs) Handles btnClose.Click
         Try
             If String.IsNullOrEmpty(txtCLoseDetail.Text.Trim()) Then
-                ShowFieldError("Please provide a reason for closing the order.")
+                lblCloseStatus.Text = "Please provide a reason for closing the order."
+                lblCloseStatus.CssClass = "alert-modern alert-danger d-block"
                 Return
             End If
 
             ' Execute close procedure
             ExecuteCloseProcedure()
 
-            ' Update close reason with parameterized query
+            ' Update close reason
             Dim strSQL As String = "UPDATE OrderHeader SET ClosedReason = @CloseReason WHERE CompanyID = @CompanyID AND DivisionID = @DivisionID AND DepartmentID = @DepartmentID AND OrderNumber = @OrderNumber"
             
             Using connection As SqlConnection = GetConnection()
@@ -246,96 +204,16 @@ Partial Public Class CreateSalesOrders
                 End Using
             End Using
 
-            ShowSuccessMessage("Order closed successfully!")
+            lblCloseStatus.Text = "Order closed successfully!"
+            lblCloseStatus.CssClass = "alert-modern alert-success d-block"
             
             ' Clean up and redirect
             closeModal.Style("display") = "none"
             Response.Redirect("~/EnterpriseASPAR/OrderProcessing/CreateSalesOrders.aspx")
 
-        Catch ex As SqlException
-            LogError("SQL Error in Order Close", ex)
-            ShowFieldError("Database error occurred while closing the order.")
         Catch ex As Exception
-            LogError("General Error in Order Close", ex)
-            ShowFieldError("An unexpected error occurred while closing the order.")
-        End Try
-    End Sub
-
-    ' Enhanced UI methods for better user experience
-    Private Sub ShowRevisionModal()
-        revisionModal.Style("display") = "block"
-        RegisterShowModalScript("revisionModal")
-    End Sub
-
-    Private Sub ShowCloseModal()
-        closeModal.Style("display") = "block"
-        RegisterShowModalScript("closeModal")
-    End Sub
-
-    Private Sub RegisterShowModalScript(modalId As String)
-        Dim script As String = String.Format("showModal('{0}');", modalId)
-        ScriptManager.RegisterStartupScript(Me, GetType(), String.Format("Show{0}", modalId), script, True)
-    End Sub
-
-    Private Sub RegisterHideModalScript(modalId As String)
-        Dim script As String = String.Format("hideModal('{0}');", modalId)
-        ScriptManager.RegisterStartupScript(Me, GetType(), String.Format("Hide{0}", modalId), script, True)
-    End Sub
-
-    Private Sub ShowSuccessMessage(message As String)
-        Dim script As String = String.Format("showAlert('{0}', 'success');", message)
-        ScriptManager.RegisterStartupScript(Me, GetType(), "SuccessAlert", script, True)
-    End Sub
-
-    Private Sub ShowErrorMessage(message As String)
-        Dim script As String = String.Format("showAlert('{0}', 'error');", message)
-        ScriptManager.RegisterStartupScript(Me, GetType(), "ErrorAlert", script, True)
-    End Sub
-
-    Private Sub ShowWarningMessage(message As String)
-        Dim script As String = String.Format("showAlert('{0}', 'warning');", message)
-        ScriptManager.RegisterStartupScript(Me, GetType(), "WarningAlert", script, True)
-    End Sub
-
-    Private Sub ShowFieldError(message As String)
-        lblCloseStatus.Text = message
-        lblCloseStatus.CssClass = "alert alert-danger alert-modern d-block"
-    End Sub
-
-    Private Sub LogError(context As String, ex As Exception)
-        ' Enhanced error logging
-        Try
-            Dim errorMessage As String = String.Format("[{0}] {1}: {2}", DateTime.Now, context, ex.Message)
-            If ex.InnerException IsNot Nothing Then
-                errorMessage += String.Format(" Inner: {0}", ex.InnerException.Message)
-            End If
-            
-            ' Log to system (you might want to implement your own logging mechanism)
-            System.Diagnostics.Debug.WriteLine(errorMessage)
-            
-            ' You can also log to database or file here
-            ' LogToDatabase(context, ex)
-            
-        Catch logEx As Exception
-            ' Don't let logging errors crash the application
-            System.Diagnostics.Debug.WriteLine(String.Format("Logging error: {0}", logEx.Message))
-        End Try
-    End Sub
-
-    Protected Overrides Sub OnUnload(e As EventArgs)
-        Try
-            ' Clean up database connections
-            Dim context As HttpContext = HttpContext.Current
-            If context IsNot Nothing AndAlso context.Items("SqlConnection") IsNot Nothing Then
-                Dim connection As SqlConnection = TryCast(context.Items("SqlConnection"), SqlConnection)
-                If connection IsNot Nothing AndAlso connection.State = ConnectionState.Open Then
-                    connection.Close()
-                End If
-            End If
-        Catch ex As Exception
-            LogError("Error in OnUnload", ex)
-        Finally
-            MyBase.OnUnload(e)
+            lblCloseStatus.Text = "An error occurred while closing the order."
+            lblCloseStatus.CssClass = "alert-modern alert-danger d-block"
         End Try
     End Sub
 

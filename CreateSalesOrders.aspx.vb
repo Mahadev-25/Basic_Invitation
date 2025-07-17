@@ -45,12 +45,20 @@ Partial Public Class CreateSalesOrders
                 Return
             End If
 
-            ' Initialize session variables
+            ' Initialize session variables with null checking
             ConnectionString = EnterpriseCommon.Configuration.ConfigSettings.ConnectionString
-            CompanyID = SessionKey("CompanyID")?.ToString() ?? ""
-            DivisionID = SessionKey("DivisionID")?.ToString() ?? ""
-            DepartmentID = SessionKey("DepartmentID")?.ToString() ?? ""
-            EmployeeID = SessionKey("EmployeeID")?.ToString() ?? ""
+            If SessionKey("CompanyID") IsNot Nothing Then
+                CompanyID = SessionKey("CompanyID").ToString()
+            End If
+            If SessionKey("DivisionID") IsNot Nothing Then
+                DivisionID = SessionKey("DivisionID").ToString()
+            End If
+            If SessionKey("DepartmentID") IsNot Nothing Then
+                DepartmentID = SessionKey("DepartmentID").ToString()
+            End If
+            If SessionKey("EmployeeID") IsNot Nothing Then
+                EmployeeID = SessionKey("EmployeeID").ToString()
+            End If
 
             If Not IsPostBack Then
                 InitializePage()
@@ -73,25 +81,13 @@ Partial Public Class CreateSalesOrders
 
     Private Sub RegisterClientScripts()
         ' Register enhanced client-side scripts for better UX
-        Dim script As String = "
-            document.addEventListener('DOMContentLoaded', function() {
-                // Initialize tooltips
-                var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle=""tooltip""]'));
-                var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-                    return new bootstrap.Tooltip(tooltipTriggerEl);
-                });
-                
-                // Add loading states to buttons
-                document.querySelectorAll('.btn').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        if (!this.classList.contains('no-loading')) {
-                            this.innerHTML = '<i class=""fas fa-spinner fa-spin""></i> Processing...';
-                            this.disabled = true;
-                        }
-                    });
-                });
-            });
-        "
+        Dim script As String = ""
+        script = "document.addEventListener('DOMContentLoaded', function() {"
+        script += "var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle=\"\"tooltip\"\"]'));"
+        script += "var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {"
+        script += "return new bootstrap.Tooltip(tooltipTriggerEl);"
+        script += "});"
+        script += "});"
         
         ScriptManager.RegisterStartupScript(Me, GetType(), "PageEnhancements", script, True)
     End Sub
@@ -103,7 +99,7 @@ Partial Public Class CreateSalesOrders
                 Return
             End If
 
-            Dim strSQL As String = $"EXEC enterprise.Order_Revised '{CompanyID}', '{DivisionID}', '{DepartmentID}', {OrderNumber}"
+            Dim strSQL As String = String.Format("EXEC enterprise.Order_Revised '{0}', '{1}', '{2}', {3}", CompanyID, DivisionID, DepartmentID, OrderNumber)
             
             Using connection As SqlConnection = GetConnection()
                 Using cmd As New SqlCommand(strSQL, connection)
@@ -155,7 +151,7 @@ Partial Public Class CreateSalesOrders
     Protected Sub btnTicketAndSelect_Click(sender As Object, e As EventArgs)
         Try
             Dim myButton As Button = TryCast(sender, Button)
-            If myButton?.CommandArgument IsNot Nothing Then
+            If myButton IsNot Nothing AndAlso myButton.CommandArgument IsNot Nothing Then
                 Dim arguments As String() = myButton.CommandArgument.ToString().Split(","c)
                 Dim orderNumber As String = arguments(0)
 
@@ -164,8 +160,8 @@ Partial Public Class CreateSalesOrders
                     Return
                 End If
 
-                Dim url As String = $"./ItemOrderDetailDetail.aspx?OrderNumber={orderNumber}"
-                Dim script As String = $"window.open('{url}', 'ItemsPopup', 'width=1200,height=800,scrollbars=yes,resizable=yes');"
+                Dim url As String = String.Format("./ItemOrderDetailDetail.aspx?OrderNumber={0}", orderNumber)
+                Dim script As String = String.Format("window.open('{0}', 'ItemsPopup', 'width=1200,height=800,scrollbars=yes,resizable=yes');", url)
                 ScriptManager.RegisterStartupScript(Me, GetType(), "OpenItemsPopup", script, True)
             End If
 
@@ -199,7 +195,7 @@ Partial Public Class CreateSalesOrders
 
     Private Sub ExecuteCloseProcedure()
         Try
-            Dim strSQL As String = $"EXEC enterprise.UnApprovedOrder_Closed '{CompanyID}', '{DivisionID}', '{DepartmentID}', '{lblCloseOrderNumber.Text}', '{EmployeeID}'"
+            Dim strSQL As String = String.Format("EXEC enterprise.UnApprovedOrder_Closed '{0}', '{1}', '{2}', '{3}', '{4}'", CompanyID, DivisionID, DepartmentID, lblCloseOrderNumber.Text, EmployeeID)
             
             Using connection As SqlConnection = GetConnection()
                 Using dAdapter As New SqlDataAdapter(strSQL, connection)
@@ -227,7 +223,7 @@ Partial Public Class CreateSalesOrders
 
     Protected Sub btnClose_Click1(sender As Object, e As EventArgs) Handles btnClose.Click
         Try
-            If String.IsNullOrWhiteSpace(txtCLoseDetail.Text) Then
+            If String.IsNullOrEmpty(txtCLoseDetail.Text.Trim()) Then
                 ShowFieldError("Please provide a reason for closing the order.")
                 Return
             End If
@@ -235,8 +231,8 @@ Partial Public Class CreateSalesOrders
             ' Execute close procedure
             ExecuteCloseProcedure()
 
-            ' Update close reason
-            Dim strSQL As String = $"UPDATE OrderHeader SET ClosedReason = @CloseReason WHERE CompanyID = @CompanyID AND DivisionID = @DivisionID AND DepartmentID = @DepartmentID AND OrderNumber = @OrderNumber"
+            ' Update close reason with parameterized query
+            Dim strSQL As String = "UPDATE OrderHeader SET ClosedReason = @CloseReason WHERE CompanyID = @CompanyID AND DivisionID = @DivisionID AND DepartmentID = @DepartmentID AND OrderNumber = @OrderNumber"
             
             Using connection As SqlConnection = GetConnection()
                 Using cmd As New SqlCommand(strSQL, connection)
@@ -277,27 +273,27 @@ Partial Public Class CreateSalesOrders
     End Sub
 
     Private Sub RegisterShowModalScript(modalId As String)
-        Dim script As String = $"showModal('{modalId}');"
-        ScriptManager.RegisterStartupScript(Me, GetType(), $"Show{modalId}", script, True)
+        Dim script As String = String.Format("showModal('{0}');", modalId)
+        ScriptManager.RegisterStartupScript(Me, GetType(), String.Format("Show{0}", modalId), script, True)
     End Sub
 
     Private Sub RegisterHideModalScript(modalId As String)
-        Dim script As String = $"hideModal('{modalId}');"
-        ScriptManager.RegisterStartupScript(Me, GetType(), $"Hide{modalId}", script, True)
+        Dim script As String = String.Format("hideModal('{0}');", modalId)
+        ScriptManager.RegisterStartupScript(Me, GetType(), String.Format("Hide{0}", modalId), script, True)
     End Sub
 
     Private Sub ShowSuccessMessage(message As String)
-        Dim script As String = $"showAlert('{message}', 'success');"
+        Dim script As String = String.Format("showAlert('{0}', 'success');", message)
         ScriptManager.RegisterStartupScript(Me, GetType(), "SuccessAlert", script, True)
     End Sub
 
     Private Sub ShowErrorMessage(message As String)
-        Dim script As String = $"showAlert('{message}', 'error');"
+        Dim script As String = String.Format("showAlert('{0}', 'error');", message)
         ScriptManager.RegisterStartupScript(Me, GetType(), "ErrorAlert", script, True)
     End Sub
 
     Private Sub ShowWarningMessage(message As String)
-        Dim script As String = $"showAlert('{message}', 'warning');"
+        Dim script As String = String.Format("showAlert('{0}', 'warning');", message)
         ScriptManager.RegisterStartupScript(Me, GetType(), "WarningAlert", script, True)
     End Sub
 
@@ -309,9 +305,9 @@ Partial Public Class CreateSalesOrders
     Private Sub LogError(context As String, ex As Exception)
         ' Enhanced error logging
         Try
-            Dim errorMessage As String = $"[{DateTime.Now}] {context}: {ex.Message}"
+            Dim errorMessage As String = String.Format("[{0}] {1}: {2}", DateTime.Now, context, ex.Message)
             If ex.InnerException IsNot Nothing Then
-                errorMessage &= $" Inner: {ex.InnerException.Message}"
+                errorMessage += String.Format(" Inner: {0}", ex.InnerException.Message)
             End If
             
             ' Log to system (you might want to implement your own logging mechanism)
@@ -322,7 +318,7 @@ Partial Public Class CreateSalesOrders
             
         Catch logEx As Exception
             ' Don't let logging errors crash the application
-            System.Diagnostics.Debug.WriteLine($"Logging error: {logEx.Message}")
+            System.Diagnostics.Debug.WriteLine(String.Format("Logging error: {0}", logEx.Message))
         End Try
     End Sub
 
@@ -330,9 +326,9 @@ Partial Public Class CreateSalesOrders
         Try
             ' Clean up database connections
             Dim context As HttpContext = HttpContext.Current
-            If context?.Items("SqlConnection") IsNot Nothing Then
+            If context IsNot Nothing AndAlso context.Items("SqlConnection") IsNot Nothing Then
                 Dim connection As SqlConnection = TryCast(context.Items("SqlConnection"), SqlConnection)
-                If connection?.State = ConnectionState.Open Then
+                If connection IsNot Nothing AndAlso connection.State = ConnectionState.Open Then
                     connection.Close()
                 End If
             End If

@@ -46,6 +46,20 @@ This document outlines the modernization of the CreateSalesOrders.aspx page with
 - Enhanced user feedback
 - Improved database operations
 
+## Fixed Compilation Issues
+
+### 1. **Removed Problematic Elements**
+- Removed SkinID references that were causing theme errors
+- Fixed script tag type attributes
+- Removed nested content in ChildLink and Button controls
+- Replaced modern VB.NET syntax with compatible alternatives
+
+### 2. **Compatibility Changes Made**
+- Used `String.Format()` instead of string interpolation
+- Replaced null-conditional operators with explicit null checks
+- Fixed JavaScript to be compatible with older browsers
+- Removed Font Awesome icons from server controls
+
 ## Manual Steps Required
 
 ### 1. **Dependencies Check**
@@ -83,6 +97,12 @@ Some Enterprise controls may need style adjustments:
 - `ctls:ShowSearchButton` - Add CssClass property
 - `ctls:ChildLink` - Verify modern styling compatibility
 - `ctls:ActionPanel` - May need custom CSS overrides
+
+### 6. **Theme Considerations**
+- Removed SkinID references to avoid theme compilation errors
+- If you need theme support, manually add it back by:
+  - Ensuring the "Enterprise" theme exists in your App_Themes folder
+  - Adding the required skin definitions for the controls
 
 ## Features Added
 

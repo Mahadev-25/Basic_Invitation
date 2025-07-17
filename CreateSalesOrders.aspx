@@ -4,7 +4,7 @@
 <%@ Register Assembly="EnterpriseASPClient" Namespace="EnterpriseASPClient.Controls" TagPrefix="ctls" %>
 
 <asp:Content ID="HeaderContent" runat="server" ContentPlaceHolderID="_header">
-    <asp:Label ID="lblPageHeader" runat="server" SkinID="headerSkin" Text="<%$ Translation:Orders List %>"></asp:Label>
+    <asp:Label ID="lblPageHeader" runat="server" Text="Orders List"></asp:Label>
 </asp:Content>
 
 <asp:Content ID="PageContent" runat="server" ContentPlaceHolderID="_mainContent">
@@ -13,11 +13,11 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css" rel="stylesheet" />
     
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
 
     <!-- Custom Styles -->
-    <style>
+    <style type="text/css">
         :root {
             --primary-color: #2c3e50;
             --secondary-color: #3498db;
@@ -207,15 +207,6 @@
             transform: scale(1.1);
         }
 
-        .dropdown-modern .dropdown-toggle {
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 8px 15px;
-            font-weight: 500;
-        }
-
         .training-video-btn {
             background: linear-gradient(135deg, #e74c3c, #c0392b);
             color: white;
@@ -253,7 +244,7 @@
     <div id="revisionModal" class="modern-modal" runat="server">
         <div class="modal-content-modern">
             <div class="modal-header-modern">
-                <h3><i class="fas fa-edit me-2"></i>Order Revision Confirmation</h3>
+                <h3>Order Revision Confirmation</h3>
             </div>
             <div class="text-center mb-3">
                 <h4>Order <asp:Label ID="lblOrderNumber" runat="server" CssClass="text-primary fw-bold"></asp:Label></h4>
@@ -272,7 +263,7 @@
     <div id="closeModal" class="modern-modal" runat="server">
         <div class="modal-content-modern">
             <div class="modal-header-modern">
-                <h3><i class="fas fa-times-circle me-2"></i>Close Order</h3>
+                <h3>Close Order</h3>
             </div>
             <div class="text-center mb-3">
                 <h4>Order: <asp:Label ID="lblCloseOrderNumber" runat="server" CssClass="text-danger fw-bold"></asp:Label></h4>
@@ -297,7 +288,7 @@
     <div class="main-container">
         <!-- Page Header -->
         <div class="page-header">
-            <h2><i class="fas fa-shopping-cart me-3"></i>Sales Orders Management</h2>
+            <h2>Sales Orders Management</h2>
         </div>
 
         <!-- Data Sources -->
@@ -310,47 +301,42 @@
         </core:ClientCallbackControl>
 
         <!-- Action Panel -->
-        <div class="action-panel">
-            <div class="row align-items-center">
-                <div class="col-md-6">
-                    <h4 class="mb-0"><i class="fas fa-cogs me-2"></i>Actions</h4>
-                </div>
-                <div class="col-md-6 text-end">
+        <asp:Table runat="server" ID="tblMain" CssClass="action-panel w-100">
+            <asp:TableRow>
+                <asp:TableCell>
+                    <asp:Label runat="server" ID="lblMain" Text="Actions" CssClass="h4 mb-0" />
+                </asp:TableCell>
+                <asp:TableCell HorizontalAlign="Right">
                     <div class="btn-group me-2">
                         <button type="button" class="training-video-btn dropdown-toggle" data-bs-toggle="dropdown">
-                            <i class="fas fa-play-circle"></i> Training Videos
+                            Training Videos
                         </button>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="#" onclick="window.open('https://www.prosyssoftech.com/TrainingVideos/SalesOrder.mp4', '_blank'); return false;">
-                                <i class="fas fa-video me-2"></i>Sales Order Tutorial 1</a></li>
-                            <li><a class="dropdown-item" href="#" onclick="window.open('https://www.prosyssoftech.com/TrainingVideos/SalesOrder-1.mp4', '_blank'); return false;">
-                                <i class="fas fa-video me-2"></i>Sales Order Tutorial 2</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="window.open('https://www.prosyssoftech.com/TrainingVideos/SalesOrder.mp4', '_blank'); return false;">Sales Order Tutorial 1</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="window.open('https://www.prosyssoftech.com/TrainingVideos/SalesOrder-1.mp4', '_blank'); return false;">Sales Order Tutorial 2</a></li>
                         </ul>
                     </div>
-                    
+                </asp:TableCell>
+                <asp:TableCell HorizontalAlign="Right">
                     <asp:LinkButton ID="btnPurchaseApproveAction" Text="Send For Approval" 
                         CssClass="btn btn-success-modern btn-modern me-2"
                         CommandName="batch:SalesApprove" CommandArgument="OrderHeaderGrid" 
-                        runat="server" OnCommand="DBDataSource1.HandleCommand">
-                        <i class="fas fa-check me-1"></i>
-                    </asp:LinkButton>
+                        runat="server" OnCommand="DBDataSource1.HandleCommand" />
                     
                     <ctls:ShowSearchButton ID="btnMainShowSearch" runat="server" SearchPanelID="MainSearchPanel" 
                         Text="Show Search" CssClass="btn btn-primary-modern btn-modern me-2" />
                     
                     <ctls:ChildLink ID="btnNewMain" runat="server" DataSourceID="DBDataSource1" 
                         TargetTable="OrderHeader" TargetUrl="OrderHeaderDetail.aspx" 
-                        Text="New Order" CssClass="btn btn-success-modern btn-modern">
-                        <i class="fas fa-plus me-1"></i>
-                    </ctls:ChildLink>
-                </div>
-            </div>
-        </div>
+                        Text="New Order" CssClass="btn btn-success-modern btn-modern" />
+                </asp:TableCell>
+            </asp:TableRow>
+        </asp:Table>
 
         <!-- Search Panel -->
         <ctls:SearchPanel ID="MainSearchPanel" runat="server" GridID="OrderHeaderGrid" 
-            SearchButtonText="<%$ Translation:Search %>" ClearButtonText="<%$ Translation:Clear %>" 
-            ExpressionLabel="<%$ Translation:Search Expression %>" Visible="False" 
+            SearchButtonText="Search" ClearButtonText="Clear" 
+            ExpressionLabel="Search Expression" Visible="False" 
             CssClass="mb-4 p-3 bg-light rounded" />
 
         <!-- Orders Grid -->
@@ -363,51 +349,26 @@
                     
                     <ctls:ChildLinkField ImageUrl="~/images/edit.gif" HeaderText="Edit" TargetUrl="OrderHeaderDetail.aspx">
                         <ItemStyle Width="40px" CssClass="text-center" />
-                        <ItemTemplate>
-                            <button type="button" class="action-btn btn-primary" title="Edit">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                        </ItemTemplate>
                     </ctls:ChildLinkField>
                     
                     <ctls:ChildLinkField ImageUrl="~/images/print.gif" TargetUrl='../../Reports/DocOrderNew.aspx' 
                         Target="_blank" HeaderText="Print">
                         <ItemStyle Width="40px" CssClass="text-center" />
-                        <ItemTemplate>
-                            <button type="button" class="action-btn btn-info" title="Print">
-                                <i class="fas fa-print"></i>
-                            </button>
-                        </ItemTemplate>
                     </ctls:ChildLinkField>
                     
                     <ctls:ChildLinkField ImageUrl="~/images/print.gif" HeaderText="Stock" 
                         TargetUrl='../../NewASPXReports/NewQuotationAndOrderStockReport.aspx?Type=Order' Target="_blank">
                         <ItemStyle Width="40px" CssClass="text-center" />
-                        <ItemTemplate>
-                            <button type="button" class="action-btn btn-warning" title="Stock Report">
-                                <i class="fas fa-boxes"></i>
-                            </button>
-                        </ItemTemplate>
                     </ctls:ChildLinkField>
                     
                     <ctls:ChildLinkField ImageUrl="~/images/return.gif" TargetUrl='../../SqlServerReports/OrderFileAttachemnt.aspx' 
                         Target="_blank" HeaderText="Files">
                         <ItemStyle Width="40px" CssClass="text-center" />
-                        <ItemTemplate>
-                            <button type="button" class="action-btn btn-secondary" title="Attachments">
-                                <i class="fas fa-paperclip"></i>
-                            </button>
-                        </ItemTemplate>
                     </ctls:ChildLinkField>
                     
                     <ctls:ChildLinkField ImageUrl="~/images/print.gif" TargetUrl='../../reports/DocNewRevDetails.aspx' 
                         Target="_blank" HeaderText="Rev Details">
                         <ItemStyle Width="40px" CssClass="text-center" />
-                        <ItemTemplate>
-                            <button type="button" class="action-btn btn-info" title="Revision Details">
-                                <i class="fas fa-history"></i>
-                            </button>
-                        </ItemTemplate>
                     </ctls:ChildLinkField>
                     
                     <asp:BoundField HeaderText="Order Number" DataField="OrderNumber" SortExpression="OrderNumber" ReadOnly="true">
@@ -436,11 +397,9 @@
                     <asp:TemplateField HeaderText="Close" ShowHeader="False">
                         <ItemStyle HorizontalAlign="Center" Width="50px" />
                         <ItemTemplate>
-                            <asp:Button ID="btnCloseOrder" runat="server" CssClass="action-btn btn-danger" 
-                                Text="Close" CommandArgument='<%# Eval("OrderNumber") %>' 
-                                OnCommand="btnClose_Command" title="Close Order">
-                                <i class="fas fa-times"></i>
-                            </asp:Button>
+                            <asp:ImageButton ID="btnClose" ImageUrl="~/images/Close.png" Width="20px" Height="20px" 
+                                CausesValidation="false" CommandArgument='<%# Eval("OrderNumber") %>' 
+                                OnCommand="btnClose_Command" runat="server" />
                         </ItemTemplate>
                     </asp:TemplateField>
 
@@ -464,7 +423,7 @@
         </div>
     </div>
 
-    <script>
+    <script type="text/javascript">
         // Modern modal handling
         function showModal(modalId) {
             document.getElementById(modalId).style.display = 'block';
@@ -477,7 +436,8 @@
         }
 
         // Enhanced alert function
-        function showAlert(message, type = 'info') {
+        function showAlert(message, type) {
+            if (typeof type === 'undefined') type = 'info';
             Swal.fire({
                 title: type === 'error' ? 'Error' : 'Information',
                 text: message,
@@ -491,12 +451,33 @@
 
         // Close modal when clicking outside
         window.onclick = function(event) {
-            const modals = document.querySelectorAll('.modern-modal');
-            modals.forEach(modal => {
-                if (event.target === modal) {
-                    hideModal(modal.id);
+            var modals = document.querySelectorAll('.modern-modal');
+            for (var i = 0; i < modals.length; i++) {
+                if (event.target === modals[i]) {
+                    hideModal(modals[i].id);
                 }
-            });
+            }
         }
+
+        // Initialize page when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add loading states to buttons
+            var buttons = document.querySelectorAll('.btn');
+            for (var i = 0; i < buttons.length; i++) {
+                buttons[i].addEventListener('click', function() {
+                    if (!this.classList.contains('no-loading')) {
+                        var originalText = this.innerHTML;
+                        this.innerHTML = 'Processing...';
+                        this.disabled = true;
+                        
+                        // Re-enable after 3 seconds to prevent permanent disable
+                        setTimeout(function() {
+                            this.innerHTML = originalText;
+                            this.disabled = false;
+                        }.bind(this), 3000);
+                    }
+                });
+            }
+        });
     </script>
 </asp:Content>
